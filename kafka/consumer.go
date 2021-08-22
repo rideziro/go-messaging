@@ -20,8 +20,9 @@ type Consumer struct {
 }
 
 type Message struct {
-	Data  []byte
-	Topic string
+	Data      []byte
+	Topic     string
+	Timestamp time.Time
 }
 
 func (c *Consumer) Consume() (*Message, error) {
@@ -49,8 +50,9 @@ func (c *Consumer) Consume() (*Message, error) {
 		topic = *msg.TopicPartition.Topic
 	}
 	return &Message{
-		Data:  value,
-		Topic: topic,
+		Data:      value,
+		Topic:     topic,
+		Timestamp: msg.Timestamp,
 	}, nil
 }
 
