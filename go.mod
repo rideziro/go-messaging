@@ -1,6 +1,6 @@
 module github.com/rideziro/go-messaging
 
-go 1.16
+go 1.15
 
 require (
 	github.com/confluentinc/confluent-kafka-go v1.7.0
