@@ -8,11 +8,11 @@ import (
 type Memory struct{}
 
 func (m *Memory) NewConsumer(config go_messaging.ConsumerConfig) (go_messaging.Consumer, error) {
-	panic("implement me")
+	return m, nil
 }
 
 func (m *Memory) NewProducer(config go_messaging.ProducerConfig) (go_messaging.Producer, error) {
-	panic("implement me")
+	return m, nil
 }
 
 func (m *Memory) Produce(id string, data []byte) error {
