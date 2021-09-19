@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	go_messaging "github.com/rideziro/go-messaging"
 	"github.com/riferrei/srclient"
 	"time"
 )
@@ -19,13 +20,7 @@ type Consumer struct {
 	schemaClient *srclient.SchemaRegistryClient
 }
 
-type Message struct {
-	Data      []byte
-	Topic     string
-	Timestamp time.Time
-}
-
-func (c *Consumer) Consume() (*Message, error) {
+func (c *Consumer) Consume() (*go_messaging.Message, error) {
 	msg, err := c.consumer.ReadMessage(c.readTimeout)
 	if err != nil {
 		return nil, ErrTimeout
@@ -49,7 +44,7 @@ func (c *Consumer) Consume() (*Message, error) {
 	if msg.TopicPartition.Topic != nil {
 		topic = *msg.TopicPartition.Topic
 	}
-	return &Message{
+	return &go_messaging.Message{
 		Data:      value,
 		Topic:     topic,
 		Timestamp: msg.Timestamp,

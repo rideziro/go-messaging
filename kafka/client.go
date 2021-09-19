@@ -3,6 +3,7 @@ package kafka
 import (
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/google/uuid"
+	go_messaging "github.com/rideziro/go-messaging"
 	"github.com/riferrei/srclient"
 	"github.com/spf13/viper"
 	"io/ioutil"
@@ -26,19 +27,6 @@ type Kafka struct {
 	SchemaClient *srclient.SchemaRegistryClient
 }
 
-type ConsumerConfig struct {
-	Group          string
-	Topics         []string
-	OverrideConfig map[string]interface{}
-	ReadTimeout    time.Duration
-}
-
-type ProducerConfig struct {
-	Topic          string
-	OverrideConfig map[string]interface{}
-	SchemaPath     string
-}
-
 func DefaultConfig() Config {
 	config := Config{}
 	config.BootstrapServers = viper.GetString("KAFKA_BROKERS")
@@ -57,7 +45,7 @@ func DefaultConfig() Config {
 	return config
 }
 
-func DefaultConsumerConfig() ConsumerConfig {
+func DefaultConsumerConfig() go_messaging.ConsumerConfig {
 	group := viper.GetString("KAFKA_CONSUMER_GROUP")
 	if group == "" {
 		group = "dev-local-group"
@@ -69,7 +57,7 @@ func DefaultConsumerConfig() ConsumerConfig {
 		readTimeoutSeconds = 20
 	}
 	readTimeout := time.Second * time.Duration(readTimeoutSeconds)
-	return ConsumerConfig{
+	return go_messaging.ConsumerConfig{
 		Group:          group,
 		Topics:         topics,
 		OverrideConfig: config,
@@ -77,19 +65,19 @@ func DefaultConsumerConfig() ConsumerConfig {
 	}
 }
 
-func DefaultProducerConfig() ProducerConfig {
+func DefaultProducerConfig() go_messaging.ProducerConfig {
 	topic := viper.GetString("KAFKA_PRODUCER_TOPIC")
 	config := viper.GetStringMap("KAFKA_PRODUCER_CONFIG")
 	schemaPath := viper.GetString("KAFKA_SCHEMA_PATH")
 
-	return ProducerConfig{
+	return go_messaging.ProducerConfig{
 		Topic:          topic,
 		OverrideConfig: config,
 		SchemaPath:     schemaPath,
 	}
 }
 
-func NewKafka(config Config) (*Kafka, error) {
+func NewKafka(config Config) (go_messaging.Messaging, error) {
 	k := Kafka{}
 	k.config = config
 
@@ -102,7 +90,7 @@ func NewKafka(config Config) (*Kafka, error) {
 	return &k, nil
 }
 
-func (k *Kafka) NewConsumer(config ConsumerConfig) (*Consumer, error) {
+func (k *Kafka) NewConsumer(config go_messaging.ConsumerConfig) (go_messaging.Consumer, error) {
 	consumerConf := &kafka.ConfigMap{
 		"bootstrap.servers":  k.config.BootstrapServers,
 		"group.id":           config.Group,
@@ -127,7 +115,7 @@ func (k *Kafka) NewConsumer(config ConsumerConfig) (*Consumer, error) {
 	return &Consumer{consumer, config.ReadTimeout, k.SchemaClient}, nil
 }
 
-func (k *Kafka) NewProducer(config ProducerConfig) (*Producer, error) {
+func (k *Kafka) NewProducer(config go_messaging.ProducerConfig) (go_messaging.Producer, error) {
 	producerConf := &kafka.ConfigMap{
 		"bootstrap.servers":   k.config.BootstrapServers,
 		"go.delivery.reports": false,
